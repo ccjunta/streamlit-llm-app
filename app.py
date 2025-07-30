@@ -1,9 +1,5 @@
 import streamlit as st
-from dotenv import load_dotenv
 import os
-
-# 環境変数の読み込み
-load_dotenv()
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -11,7 +7,18 @@ from langchain_core.messages import SystemMessage, HumanMessage
 # LLMの初期化
 @st.cache_resource
 def init_llm():
-    return ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
+    # Streamlit SecretsからOpenAI APIキーを取得
+    try:
+        openai_api_key = st.secrets["OPENAI_API_KEY"]
+        return ChatOpenAI(
+            model_name="gpt-4o-mini", 
+            temperature=0,
+            api_key=openai_api_key
+        )
+    except KeyError:
+        st.error("⚠️ OpenAI APIキーが設定されていません。")
+        st.info("Streamlit Cloud の Secrets で OPENAI_API_KEY を設定してください。")
+        st.stop()
 
 # 専門家の種類とシステムメッセージの定義
 EXPERTS = {
